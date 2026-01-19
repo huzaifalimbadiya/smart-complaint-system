@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+
+    <h2 class="mb-4">
+        <i class="bi bi-speedometer2"></i> Admin Dashboard
+    </h2>
+
+    <!-- ================= STAT CARDS ================= -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h3>{{ total_complaints }}</h3>
+                <p>Total Complaints</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card pending">
+                <h3>{{ pending_complaints }}</h3>
+                <p>Pending</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card in-progress">
+                <h3>{{ in_progress_complaints }}</h3>
+                <p>In Progress</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card resolved">
+                <h3>{{ resolved_complaints }}</h3>
+                <p>Resolved</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CHARTS ================= -->
+    <div class="row">
+
+        <!-- Category Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-custom h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart"></i> Complaints by Category
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-custom h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Monthly Trend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= RECENT COMPLAINTS TABLE ================= -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-custom">
+
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Recent Complaints
+                    </h5>
+                    <a href="{% url 'dashboard:manage_complaints' %}" class="btn btn-sm btn-primary">
+                        View All
+                    </a>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>User</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for complaint in recent_complaints %}
+                                <tr>
+                                    <td><strong>#{{ complaint.id }}</strong></td>
+
+                                    <td>{{ complaint.title|truncatewords:6 }}</td>
+
+                                    <td>{{ complaint.user.username }}</td>
+
+                                    <td>
+                                        {% if complaint.get_category %}
+                                        <span class="badge bg-secondary">
+                                            {{ complaint.get_category.name }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">N/A</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <span class="badge badge-{{ complaint.status }}">
+                                            {{ complaint.get_status_display }}
+                                        </span>
+                                    </td>
+
+                                    <td>{{ complaint.created_at|date:"M d, Y" }}</td>
+
+                                    <td>
+                                        <a href="{% url 'dashboard:update_complaint' complaint.id %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        No complaints found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+
+{# -------- SAFE JSON DATA FOR JS -------- #}
+{{ category_labels_json|json_script:"category-labels" }}
+{{ category_counts_json|json_script:"category-counts" }}
+{{ monthly_labels_json|json_script:"monthly-labels" }}
+{{ monthly_counts_json|json_script:"monthly-counts" }}
+
+<script>
+    // ---------- READ DATA ----------
+    const categoryLabels = JSON.parse(
+        document.getElementById('category-labels').textContent
+    );
+    const categoryCounts = JSON.parse(
+        document.getElementById('category-counts').textContent
+    );
+
+    const monthlyLabels = JSON.parse(
+        document.getElementById('monthly-labels').textContent
+    );
+    const monthlyCounts = JSON.parse(
+        document.getElementById('monthly-counts').textContent
+    );
+
+    // ---------- CATEGORY CHART ----------
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryCounts,
+                backgroundColor: [
+                    '#3498DB', '#2ECC71', '#F39C12',
+                    '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // ---------- MONTHLY CHART ----------
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Complaints',
+                data: monthlyCounts,
+                backgroundColor: 'rgba(52,152,219,0.2)',
+                borderColor: 'rgba(52,152,219,1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}My Complaints - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-file-earmark-text"></i> My Complaints</h2>
+                <a href="{% url 'complaints:submit_complaint' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Complaint
+                </a>
+            </div>
+
+            {% if complaints %}
+            <div class="card shadow-custom">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Area</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for complaint in complaints %}
+                                <tr>
+                                    <td><strong>#{{ complaint.id }}</strong></td>
+                                    <td>{{ complaint.title|truncatewords:8 }}</td>
+                                    <td>
+                                        {% if complaint.get_category %}
+                                        <span class="badge bg-secondary">{{ complaint.get_category.name }}</span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">Uncategorized</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ complaint.area|truncatewords:3 }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ complaint.status }}">
+                                            {{ complaint.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ complaint.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'complaints:complaint_detail' complaint.id %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if complaints.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if complaints.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ complaints.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in complaints.paginator.page_range %}
+                    {% if complaints.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if complaints.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ complaints.next_page_number }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-info text-center">
+                <h5><i class="bi bi-info-circle"></i> No Complaints Yet</h5>
+                <p>You haven't submitted any complaints. Click the button above to submit your first complaint.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

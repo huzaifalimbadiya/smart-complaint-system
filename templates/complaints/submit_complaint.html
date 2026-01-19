@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Complaint - Smart Complaint System{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-custom">
+                <div class="card-header">
+                    <h3><i class="bi bi-plus-circle"></i> Submit New Complaint</h3>
+                    <p class="mb-0 text-white-50">Our AI will automatically classify your complaint</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Complaint Title *</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger small">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Detailed Description
+                                *</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger small">{{ form.description.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Provide as much detail as possible. The AI will
+                                analyze this to categorize your complaint.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.area.id_for_label }}" class="form-label">Location/Area *</label>
+                            {{ form.area }}
+                            {% if form.area.errors %}
+                            <div class="text-danger small">{{ form.area.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Upload Image
+                                (Optional)</label>
+                            {{ form.image }}
+                            {% if form.image.errors %}
+                            <div class="text-danger small">{{ form.image.errors }}</div>
+                            {% endif %}
+                            {% if form.image.help_text %}
+                            <div class="form-text">{{ form.image.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-robot"></i> <strong>AI Classification:</strong> Once you submit, our AI will
+                            analyze your description and automatically assign the best category (Electricity, Water,
+                            Roads, etc.)
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'complaints:my_complaints' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Submit Complaint
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
