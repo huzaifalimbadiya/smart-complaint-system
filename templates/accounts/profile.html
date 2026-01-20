@@ -1,59 +1,432 @@
 {% extends 'base.html' %}
-
-{% block title %}My Profile - Smart Complaint System{% endblock %}
 {% load static %}
+
+{% block title %}My Profile - SmartComplaint System{% endblock %}
+
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow-custom">
-                <div class="card-header">
-                    <h5><i class="bi bi-person-circle"></i> User Information</h5>
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-4 fade-in">
+        <div class="col">
+            <div class="d-flex align-items-center">
+                <div class="page-header-icon me-3">
+                    <i class="bi bi-person-circle"></i>
                 </div>
+                <div>
+                    <h1 class="mb-1">My Profile</h1>
+                    <p class="text-muted mb-0">Manage your account information and preferences</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Profile Card -->
+        <div class="col-lg-4">
+            <div class="card profile-card fade-in">
+                <div class="card-body text-center">
+                    <!-- Profile Avatar -->
+                    <div class="profile-avatar mx-auto mb-4">
+                        <div class="avatar-circle">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div class="avatar-status"></div>
+                    </div>
+
+                    <!-- User Name -->
+                    <h4 class="mb-2">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted mb-3">@{{ user.username }}</p>
+
+                    <!-- Status Badges -->
+                    <div class="mb-4">
+                        {% if user.is_staff %}
+                        <span class="badge bg-primary px-3 py-2">
+                            <i class="bi bi-shield-check me-1"></i> Admin
+                        </span>
+                        {% else %}
+                        <span class="badge bg-success px-3 py-2">
+                            <i class="bi bi-person-check me-1"></i> User
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Profile Stats -->
+                    <div class="row text-center g-3">
+                        <div class="col-6">
+                            <div class="profile-stat">
+                                <div class="stat-icon mb-2">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </div>
+                                <h5 class="mb-0">0</h5>
+                                <small class="text-muted">Complaints</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="profile-stat">
+                                <div class="stat-icon mb-2">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <h5 class="mb-0">0</h5>
+                                <small class="text-muted">Resolved</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Info Card -->
+            <div class="card mt-4 fade-in" style="animation-delay: 0.1s;">
                 <div class="card-body">
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Name:</strong> {{ user.get_full_name|default:"Not set" }}</p>
-                    <p><strong>Member Since:</strong> {{ user.date_joined|date:"F Y" }}</p>
-                    {% if user.is_staff %}
-                    <span class="badge bg-primary">Admin</span>
-                    {% endif %}
+                    <h6 class="mb-3 fw-bold">
+                        <i class="bi bi-info-circle me-2"></i> Account Information
+                    </h6>
+
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="info-icon me-3">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <small class="text-muted d-block">Email</small>
+                                <strong>{{ user.email }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="info-icon me-3">
+                                <i class="bi bi-calendar"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <small class="text-muted d-block">Member Since</small>
+                                <strong>{{ user.date_joined|date:"F Y" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="d-flex align-items-center">
+                            <div class="info-icon me-3">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <small class="text-muted d-block">Last Updated</small>
+                                <strong>{{ user.date_joined|date:"M d, Y" }}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-8">
-            <div class="card shadow-custom">
+        <!-- Right Column - Edit Form -->
+        <div class="col-lg-8">
+            <div class="card fade-in" style="animation-delay: 0.2s;">
                 <div class="card-header">
-                    <h5><i class="bi bi-pencil-square"></i> Update Profile</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-pencil-square me-2"></i> Update Profile Information
+                    </h5>
                 </div>
-                <div class="card-body">
-                    <form method="post">
+                <div class="card-body p-4">
+                    <form method="post" class="modern-form">
                         {% csrf_token %}
 
-                        <div class="mb-3">
-                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
-                            {{ form.phone }}
-                            {% if form.phone.errors %}
-                            <div class="text-danger small">{{ form.phone.errors }}</div>
-                            {% endif %}
+                        <!-- Personal Information Section -->
+                        <div class="form-section mb-4">
+                            <h6 class="section-title mb-3">
+                                <i class="bi bi-person me-2"></i> Personal Information
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="username"
+                                            value="{{ user.username }}" readonly>
+                                        <label for="username">
+                                            <i class="bi bi-at me-1"></i> Username
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control" id="email" value="{{ user.email }}"
+                                            readonly>
+                                        <label for="email">
+                                            <i class="bi bi-envelope me-1"></i> Email Address
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.area.id_for_label }}" class="form-label">Area/Location</label>
-                            {{ form.area }}
-                            {% if form.area.errors %}
-                            <div class="text-danger small">{{ form.area.errors }}</div>
-                            {% endif %}
+                        <!-- Contact Information Section -->
+                        <div class="form-section mb-4">
+                            <h6 class="section-title mb-3">
+                                <i class="bi bi-telephone me-2"></i> Contact Information
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                        <i class="bi bi-phone me-1"></i> Phone Number
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.phone.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="text-muted">Enter your contact number with country code</small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="{{ form.area.id_for_label }}" class="form-label">
+                                        <i class="bi bi-geo-alt me-1"></i> Area / Location
+                                    </label>
+                                    {{ form.area }}
+                                    {% if form.area.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.area.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="text-muted">Your city or area of residence</small>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Update Profile
-                        </button>
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-2"></i> Save Changes
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-x-circle me-2"></i> Reset
+                            </button>
+                        </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Additional Settings Card -->
+            <div class="card mt-4 fade-in" style="animation-delay: 0.3s;">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear me-2"></i> Account Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="bi bi-bell me-2 text-primary"></i> Email Notifications
+                                    </h6>
+                                    <small class="text-muted">Receive updates about your complaints</small>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="bi bi-shield-lock me-2 text-success"></i> Two-Factor Authentication
+                                    </h6>
+                                    <small class="text-muted">Add an extra layer of security</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary">Enable</button>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="setting-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="bi bi-key me-2 text-warning"></i> Change Password
+                                    </h6>
+                                    <small class="text-muted">Update your account password</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary">Change</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Profile Page Specific Styles */
+    .page-header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: var(--radius-xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    }
+
+    .profile-card {
+        border: 2px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .profile-avatar {
+        position: relative;
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+
+    .avatar-status {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background: var(--success);
+        border: 3px solid white;
+        border-radius: 50%;
+        z-index: 2;
+    }
+
+    .profile-stat {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+    }
+
+    .profile-stat:hover {
+        background: var(--gray-50);
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+        border-radius: var(--radius-md);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .info-item {
+        padding: 0.75rem;
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+    }
+
+    .info-item:hover {
+        background: var(--gray-50);
+    }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.1) 100%);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .form-section {
+        padding: 1.5rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-lg);
+    }
+
+    .section-title {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .form-floating {
+        position: relative;
+    }
+
+    .form-floating>.form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+    }
+
+    .form-floating>label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+    }
+
+    .form-floating>.form-control:focus~label,
+    .form-floating>.form-control:not(:placeholder-shown)~label {
+        opacity: 0.65;
+        transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    }
+
+    .settings-list .setting-item {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+    }
+
+    .settings-list .setting-item:hover {
+        background: var(--gray-50);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .btn-outline-secondary {
+        border: 2px solid var(--gray-300);
+        color: var(--gray-700);
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--gray-700);
+        border-color: var(--gray-700);
+        color: white;
+    }
+</style>
 {% endblock %}
